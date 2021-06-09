@@ -34,15 +34,20 @@ if (Platform.OS === 'ios') {
 const functions = ['setFromResponse', 'getFromResponse'];
 
 module.exports = {
-  getAll: (useWebKit = false, groupContainerIdentifier = '') =>
+  getAll: (useWebKit = false, groupContainerIdentifier = null) =>
     CookieManager.getAll(useWebKit, groupContainerIdentifier),
-  clearAll: (useWebKit = false, groupContainerIdentifier = '') =>
+  clearAll: (useWebKit = false, groupContainerIdentifier = null) =>
     CookieManager.clearAll(useWebKit, groupContainerIdentifier),
-  get: (url, useWebKit = false, groupContainerIdentifier = '') =>
+  get: (url, useWebKit = false, groupContainerIdentifier = null) =>
     CookieManager.get(url, useWebKit, groupContainerIdentifier),
-  set: (url, cookie, useWebKit = false, groupContainerIdentifier = '') =>
+  set: (url, cookie, useWebKit = false, groupContainerIdentifier = null) =>
     CookieManager.set(url, cookie, useWebKit, groupContainerIdentifier),
-  clearByName: (url, name, useWebKit = false, groupContainerIdentifier = '') =>
+  clearByName: (
+    url,
+    name,
+    useWebKit = false,
+    groupContainerIdentifier = null,
+  ) =>
     CookieManager.clearByName(url, name, useWebKit, groupContainerIdentifier),
   flush: async () => {
     if (Platform.OS === 'android') {
