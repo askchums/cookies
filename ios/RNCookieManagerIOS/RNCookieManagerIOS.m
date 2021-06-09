@@ -46,6 +46,7 @@ RCT_EXPORT_METHOD(
     set:(NSURL *)url
     cookie:(NSDictionary *)props
     useWebKit:(BOOL)useWebKit
+    groupContainerIdentifier:(NSString *)groupContainerIdentifier
     resolver:(RCTPromiseResolveBlock)resolve
     rejecter:(RCTPromiseRejectBlock)reject)
 {
@@ -69,6 +70,9 @@ RCT_EXPORT_METHOD(
         } else {
             reject(@"", NOT_AVAILABLE_ERROR_MESSAGE, nil);
         }
+    } else if (groupContainerIdentifier) {
+        [[NSHTTPCookieStorage sharedCookieStorageForGroupContainerIdentifier:groupContainerIdentifier] setCookie:cookie];
+        resolve(@(YES));
     } else {
         [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:cookie];
         resolve(@(YES));
@@ -110,6 +114,7 @@ RCT_EXPORT_METHOD(
 RCT_EXPORT_METHOD(
     get:(NSURL *)url
     useWebKit:(BOOL)useWebKit
+    groupContainerIdentifier:(NSString *)groupContainerIdentifier
     resolver:(RCTPromiseResolveBlock)resolve
     rejecter:(RCTPromiseRejectBlock)reject)
 {
@@ -140,8 +145,15 @@ RCT_EXPORT_METHOD(
         }
     } else {
         NSMutableDictionary *cookies = [NSMutableDictionary dictionary];
-        for (NSHTTPCookie *cookie in [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:url]) {
-            [cookies setObject:[self createCookieData:cookie] forKey:cookie.name];
+
+        if (groupContainerIdentifier) {
+            for (NSHTTPCookie *cookie in [[NSHTTPCookieStorage sharedCookieStorageForGroupContainerIdentifier:groupContainerIdentifier] cookiesForURL:url]) {
+                [cookies setObject:[self createCookieData:cookie] forKey:cookie.name];
+            }
+        } else {
+            for (NSHTTPCookie *cookie in [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:url]) {
+                [cookies setObject:[self createCookieData:cookie] forKey:cookie.name];
+            }
         }
         resolve(cookies);
     }
@@ -149,6 +161,7 @@ RCT_EXPORT_METHOD(
 
 RCT_EXPORT_METHOD(
     clearAll:(BOOL)useWebKit
+    groupContainerIdentifier:(NSString *)groupContainerIdentifier
     resolver:(RCTPromiseResolveBlock)resolve
     rejecter:(RCTPromiseRejectBlock)reject)
 {
@@ -168,10 +181,18 @@ RCT_EXPORT_METHOD(
             reject(@"", NOT_AVAILABLE_ERROR_MESSAGE, nil);
         }
     } else {
-        NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
-        for (NSHTTPCookie *c in cookieStorage.cookies) {
-            [cookieStorage deleteCookie:c];
+        if (groupContainerIdentifier) {
+            NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedCookieStorageForGroupContainerIdentifier:groupContainerIdentifier];
+            for (NSHTTPCookie *c in cookieStorage.cookies) {
+                [cookieStorage deleteCookie:c];
+            }
+        } else {
+            NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+            for (NSHTTPCookie *c in cookieStorage.cookies) {
+                [cookieStorage deleteCookie:c];
+            }
         }
+
         [[NSUserDefaults standardUserDefaults] synchronize];
         resolve(@(YES));
     }
@@ -181,6 +202,7 @@ RCT_EXPORT_METHOD(
     clearByName:(NSURL *)url
     name:(NSString *)name
     useWebKit:(BOOL)useWebKit
+    groupContainerIdentifier:(NSString *)groupContainerIdentifier
     resolver:(RCTPromiseResolveBlock)resolve
     rejecter:(RCTPromiseRejectBlock)reject) {
     __block NSNumber * foundCookies = @NO;
@@ -214,6 +236,15 @@ RCT_EXPORT_METHOD(
             reject(@"", NOT_AVAILABLE_ERROR_MESSAGE, nil);
         }
     } else {
+        if (groupContainerIdentifier) {
+            NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedCookieStorageForGroupContainerIdentifier:groupContainerIdentifier];
+            for (NSHTTPCookie *c in cookieStorage.cookies) {
+               if ([[c name] isEqualToString:name]) {
+                   [cookieStorage deleteCookie:c];
+                   foundCookies = @YES;
+               }
+            }
+        } else {
            NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
            for (NSHTTPCookie *c in cookieStorage.cookies) {
                if ([[c name] isEqualToString:name]) {
@@ -221,12 +252,14 @@ RCT_EXPORT_METHOD(
                    foundCookies = @YES;
                }
            }
-           resolve(foundCookies);
+        }
+        resolve(foundCookies);
     }
 }
 
 RCT_EXPORT_METHOD(
     getAll:(BOOL)useWebKit
+    groupContainerIdentifier:(NSString *)groupContainerIdentifier
     resolver:(RCTPromiseResolveBlock)resolve
     rejecter:(RCTPromiseRejectBlock)reject)
 {
@@ -241,6 +274,9 @@ RCT_EXPORT_METHOD(
         } else {
             reject(@"", NOT_AVAILABLE_ERROR_MESSAGE, nil);
         }
+    } else if (groupContainerIdentifier) {
+        NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedCookieStorageForGroupContainerIdentifier:groupContainerIdentifier];
+        resolve([self createCookieList:cookieStorage.cookies]);
     } else {
         NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
         resolve([self createCookieList:cookieStorage.cookies]);

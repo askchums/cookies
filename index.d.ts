@@ -15,22 +15,38 @@ declare module '@react-native-cookies/cookies' {
   }
 
   export interface CookieManagerStatic {
-    set(url: string, cookie: Cookie, useWebKit?: boolean): Promise<boolean>;
+    set(
+      url: string,
+      cookie: Cookie,
+      useWebKit?: boolean,
+      groupContainerIdentifier?: string,
+    ): Promise<boolean>;
     setFromResponse(url: string, cookie: string): Promise<boolean>;
 
-    get(url: string, useWebKit?: boolean): Promise<Cookies>;
+    get(
+      url: string,
+      useWebKit?: boolean,
+      groupContainerIdentifier?: string,
+    ): Promise<Cookies>;
     getFromResponse(url: string): Promise<Cookies>;
 
-    clearAll(useWebKit?: boolean): Promise<boolean>;
-    
+    clearAll(
+      useWebKit?: boolean,
+      groupContainerIdentifier?: string,
+    ): Promise<boolean>;
+
     flush(): Promise<void>;
 
     //iOS only
-    getAll(useWebKit?: boolean): Promise<Cookies>;
+    getAll(
+      useWebKit?: boolean,
+      groupContainerIdentifier?: string,
+    ): Promise<Cookies>;
     clearByName(
       url: string,
       name: string,
       useWebKit?: boolean,
+      groupContainerIdentifier?: string,
     ): Promise<boolean>;
   }
 
